@@ -1,0 +1,36 @@
+{
+  "name": "@open-dcp/equation-editor",
+  "version": "0.1.2",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "Tobias Ladner",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "rxjs": ">=7.8.2"
+  },
+  "dependencies": {
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "rxjs": "^7.8.2",
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.7.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Roche/dcp-pkg-fe-ts-equation-editor.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
