@@ -1,6 +1,6 @@
-import { EquationEditor } from '../EquationEditor';
-import { Variable, Operator } from '../types/EquationEditor';
-import { TokenType } from '../enums/TokenType';
+import { EquationEditor } from '../EquationEditor.js';
+import { Variable, Operator } from '../types/EquationEditor.js';
+import { TokenType } from '../enums/TokenType.js';
 
 describe('Token Data Integration', () => {
     describe('Variable Token Data', () => {

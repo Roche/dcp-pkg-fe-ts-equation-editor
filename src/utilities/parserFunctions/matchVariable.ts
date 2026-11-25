@@ -1,5 +1,5 @@
-import { FormulaToken } from '../../types/EquationEditor';
-import { TokenType } from '../../enums/TokenType';
+import { FormulaToken } from '../../types/EquationEditor.js';
+import { TokenType } from '../../enums/TokenType.js';
 
 export function matchVariable(
     formula: string,

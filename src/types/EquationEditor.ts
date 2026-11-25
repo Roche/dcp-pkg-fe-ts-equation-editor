@@ -1,5 +1,5 @@
-import { TokenType } from "../enums/TokenType";
-import { MathOperator, Parenthesis } from '../enums/MathSymbols';
+import { TokenType } from "../enums/TokenType.js";
+import { MathOperator, Parenthesis } from '../enums/MathSymbols.js';
 
 export type EditorMode = 'formula' | 'equation';
 export type OperatorCategory = 'math' | 'comparison' | 'boolean' | 'text';

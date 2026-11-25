@@ -1,5 +1,5 @@
-import { matchNumber } from '../matchNumber';
-import { TokenType } from '../../../enums/TokenType';
+import { matchNumber } from '../matchNumber.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 describe('matchNumber', () => {
     it('matches integer', () => {

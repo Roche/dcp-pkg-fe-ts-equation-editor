@@ -1,5 +1,5 @@
-import { matchOperator } from '../matchOperator';
-import { TokenType } from '../../../enums/TokenType';
+import { matchOperator } from '../matchOperator.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 describe('matchOperator', () => {
     it('matches built-in operator', () => {

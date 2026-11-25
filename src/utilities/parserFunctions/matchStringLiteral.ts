@@ -1,6 +1,6 @@
-import { LiteralStringDelimiters } from '../../enums/MathSymbols';
-import { FormulaToken, TranslationFunction } from '../../types/EquationEditor';
-import { TokenType } from '../../enums/TokenType';
+import { LiteralStringDelimiters } from '../../enums/MathSymbols.js';
+import { FormulaToken, TranslationFunction } from '../../types/EquationEditor.js';
+import { TokenType } from '../../enums/TokenType.js';
 
 export function matchStringLiteral(
     formula: string,

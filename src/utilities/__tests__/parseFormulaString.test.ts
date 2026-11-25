@@ -1,6 +1,6 @@
-import { parseFormulaString } from '../parseFormulaString';
-import { TokenType } from '../../enums/TokenType';
-import { Operator } from '../../types/EquationEditor';
+import { parseFormulaString } from '../parseFormulaString.js';
+import { TokenType } from '../../enums/TokenType.js';
+import { Operator } from '../../types/EquationEditor.js';
 
 describe('parseFormulaString', () => {
     it('should parse simple formula', () => {

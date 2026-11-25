@@ -1,12 +1,16 @@
-import { TokenType } from '../enums/TokenType';
-import { FormulaToken } from '../types/EquationEditor';
+import { TokenType } from '../enums/TokenType.js';
+import { FormulaToken } from '../types/EquationEditor.js';
+
+/** Renders a variable token. Default: `variableFenceOpen + token.value + variableFenceClose`. */
+export type VariableTokenFormatter = (token: FormulaToken, variableFenceOpen: string, variableFenceClose: string) => string;
 
 export function joinTokensNormalized(
     tokens: FormulaToken[],
     variableFenceOpen: string = '{',
     variableFenceClose: string = '}',
     numberFenceOpen: string | null = null,
-    numberFenceClose: string | null = null
+    numberFenceClose: string | null = null,
+    formatVariable?: VariableTokenFormatter
 ): string {
     let result = '';
     for (let i = 0; i < tokens.length; i++) {
@@ -14,7 +18,10 @@ export function joinTokensNormalized(
 
         // Fence variable tokens
         if (t.type === TokenType.Variable) {
-            result += (i > 0 ? ' ' : '') + variableFenceOpen + t.value + variableFenceClose;
+            const rendered = formatVariable
+                ? formatVariable(t, variableFenceOpen, variableFenceClose)
+                : variableFenceOpen + t.value + variableFenceClose;
+            result += (i > 0 ? ' ' : '') + rendered;
             continue;
         }
 

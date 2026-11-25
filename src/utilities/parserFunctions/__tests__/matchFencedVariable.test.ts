@@ -1,5 +1,5 @@
-import { matchFencedVariable } from '../matchFencedVariable';
-import { TokenType } from '../../../enums/TokenType';
+import { matchFencedVariable } from '../matchFencedVariable.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 // Simple translation function for testing
 const testTranslator = (key: string, payload?: Record<string, any>) => key;

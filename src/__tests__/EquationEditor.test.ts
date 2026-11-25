@@ -1,7 +1,7 @@
-import { EquationEditor } from '../EquationEditor';
-import { Operator, Variable } from '../types/EquationEditor';
-import { TokenType } from '../enums/TokenType';
-import { Parenthesis } from '../enums/MathSymbols';
+import { EquationEditor } from '../EquationEditor.js';
+import { Operator, Variable } from '../types/EquationEditor.js';
+import { TokenType } from '../enums/TokenType.js';
+import { Parenthesis } from '../enums/MathSymbols.js';
 import { firstValueFrom } from 'rxjs';
 
 describe('EquationEditor', () => {
@@ -432,6 +432,155 @@ describe('EquationEditor', () => {
             expect(details.display).toBe('sin( {Value} )');
             expect(details.raw).toBe('sin( val_1 )');
             expect(details.tokens!.some(t => t.type === TokenType.Function)).toBe(true);
+        });
+    });
+
+    describe('formula details are built from tokens', () => {
+        it('inserts values literally (no $ replacement patterns)', () => {
+            const details = EquationEditor.getFormulaDetails('{price} + {qty}', [
+                { label: 'price', value: "amt$'" },
+                { label: 'qty', value: 'q$&$1$$' }
+            ]);
+
+            expect(details.raw).toBe("amt$' + q$&$1$$");
+            expect(details.fanciedRaw).toBe("{amt$'} + {q$&$1$$}");
+            expect(details.unfancedDisplay).toBe('price + qty');
+        });
+
+        it('does not substitute again inside already substituted values', () => {
+            const vars: Variable[] = [
+                { label: 'b', value: '{a}' },
+                { label: 'a', value: 'secret_col' }
+            ];
+            expect(EquationEditor.getFormulaDetails('{b} + 1', vars).raw).toBe('{a} + 1');
+
+            const chained: Variable[] = [
+                { label: 'A', value: 'B' },
+                { label: 'B', value: 'col_b' }
+            ];
+            const details = EquationEditor.getFormulaDetails('{A} + {B}', chained);
+            expect(details.raw).toBe('B + col_b');
+            expect(details.fanciedRaw).toBe('{B} + {col_b}');
+        });
+
+        it('keeps string literals verbatim', () => {
+            const details = EquationEditor.getFormulaDetails(
+                "{a} = '{a}'",
+                [{ label: 'a', value: 'col_a' }],
+                [],
+                [],
+                { mode: 'equation' }
+            );
+
+            expect(details.display).toBe("{a} = '{a}'");
+            expect(details.raw).toBe("col_a = '{a}'");
+            expect(details.fanciedRaw).toBe("{col_a} = '{a}'");
+            expect(details.unfancedDisplay).toBe("a = '{a}'");
+        });
+
+        it('keeps unknown variables fenced and uses the first of duplicate labels', () => {
+            const details = EquationEditor.getFormulaDetails('{x} + {ghost}', [
+                { label: 'x', value: 'first' },
+                { label: 'x', value: 'second' }
+            ]);
+
+            expect(details.raw).toBe('first + {ghost}');
+            expect(details.fanciedRaw).toBe('{first} + {ghost}');
+            expect(details.unfancedDisplay).toBe('x + {ghost}');
+        });
+
+        it('respects custom variable fences', () => {
+            const details = EquationEditor.getFormulaDetails(
+                '[[A]] * 2',
+                [{ label: 'A', value: 'a$&' }],
+                undefined,
+                undefined,
+                { variableFenceOpen: '[[', variableFenceClose: ']]' }
+            );
+
+            expect(details.raw).toBe('a$& * 2');
+            expect(details.fanciedRaw).toBe('[[a$&]] * 2');
+            expect(details.unfancedDisplay).toBe('A * 2');
+        });
+    });
+
+    describe('valid$ with a custom validator', () => {
+        const flush = () => new Promise(resolve => setTimeout(resolve, 0));
+
+        it('keeps validating after the validator rejects', async () => {
+            let fail = true;
+            const customValidator = jest.fn(async () => {
+                if (fail) throw new Error('network down');
+                return ['backend says no'];
+            });
+            const editor = new EquationEditor('{x} + {y}', variables, [], [], { customValidator });
+            const emissions: string[][] = [];
+            let errored = false;
+            const sub = editor.valid$.subscribe({ next: v => emissions.push(v), error: () => { errored = true; } });
+            await flush();
+
+            expect(errored).toBe(false);
+            expect(emissions[emissions.length - 1]).toEqual(['Custom validation failed']);
+
+            fail = false;
+            editor.updateFormula('{x} - {y}');
+            await flush();
+
+            expect(customValidator).toHaveBeenCalledTimes(2);
+            expect(emissions[emissions.length - 1]).toEqual(['backend says no']);
+            sub.unsubscribe();
+        });
+
+        it('catches synchronous throws', async () => {
+            const customValidator = () => { throw new Error('boom'); };
+            const editor = new EquationEditor('{x}', variables, [], [], { customValidator });
+            const result = await firstValueFrom(editor.valid$);
+            expect(result).toEqual(['Custom validation failed']);
+        });
+
+        it('keeps internal errors and translates the failure message', async () => {
+            const translator = (key: string) => `T:${key}`;
+            const customValidator = () => Promise.reject(new Error('x'));
+            const editor = new EquationEditor('{x} +', variables, [], [], {
+                customValidator,
+                translator,
+                translationPrefix: 'app'
+            });
+            const result = await firstValueFrom(editor.valid$);
+
+            expect(result[result.length - 1]).toBe('T:app.equation-editor.validations.custom-validation-failed');
+            expect(result.length).toBeGreaterThan(1);
+        });
+
+        it('honours ignoreInternalErrors on failure', async () => {
+            const editor = new EquationEditor('{x} +', variables, [], [], {
+                customValidator: () => Promise.reject(new Error('x')),
+                ignoreInternalErrors: true
+            });
+            expect(await firstValueFrom(editor.valid$)).toEqual(['Custom validation failed']);
+        });
+
+        it('runs the validator once per change for multiple subscribers', async () => {
+            const customValidator = jest.fn(() => [] as string[]);
+            const editor = new EquationEditor('{x} + {y}', variables, [], [], { customValidator });
+            const a: string[][] = [];
+            const b: string[][] = [];
+            const subA = editor.valid$.subscribe(v => a.push(v));
+            const subB = editor.valid$.subscribe(v => b.push(v));
+            await flush();
+            editor.updateFormula('{x} * {y}');
+            await flush();
+
+            expect(customValidator).toHaveBeenCalledTimes(2);
+            expect(a).toEqual(b);
+            expect(a.length).toBe(2);
+            subA.unsubscribe();
+            subB.unsubscribe();
+        });
+
+        it('without a custom validator emits the internal errors', async () => {
+            const editor = new EquationEditor('{x} + {y}', variables);
+            expect(await firstValueFrom(editor.valid$)).toEqual([]);
         });
     });
 });

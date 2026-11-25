@@ -1,6 +1,6 @@
-import { FormulaToken } from '../../types/EquationEditor';
-import { TokenType } from '../../enums/TokenType';
-import { ArgumentSeparator } from '../../enums/MathSymbols';
+import { FormulaToken } from '../../types/EquationEditor.js';
+import { TokenType } from '../../enums/TokenType.js';
+import { ArgumentSeparator } from '../../enums/MathSymbols.js';
 
 export function matchArgumentSeparator(
     formula: string,

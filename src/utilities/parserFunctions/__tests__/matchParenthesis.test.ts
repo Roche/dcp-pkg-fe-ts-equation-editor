@@ -1,5 +1,5 @@
-import { matchParenthesis } from '../matchParenthesis';
-import { TokenType } from '../../../enums/TokenType';
+import { matchParenthesis } from '../matchParenthesis.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 describe('matchParenthesis', () => {
     it('matches open parenthesis', () => {

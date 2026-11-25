@@ -1,5 +1,5 @@
-import { matchFunction } from '../matchFunction';
-import { TokenType } from '../../../enums/TokenType';
+import { matchFunction } from '../matchFunction.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 describe('matchFunction', () => {
     it('matches function followed by parenthesis', () => {

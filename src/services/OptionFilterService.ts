@@ -1,6 +1,6 @@
-import { AllOptions, EditorMode, FormulaToken, Operator } from '../types/EquationEditor';
-import { MathOperator, Parenthesis } from '../enums/MathSymbols';
-import { TokenType } from '../enums/TokenType';
+import { AllOptions, EditorMode, FormulaToken, Operator } from '../types/EquationEditor.js';
+import { MathOperator, Parenthesis } from '../enums/MathSymbols.js';
+import { TokenType } from '../enums/TokenType.js';
 
 export class OptionFilterService {
     private static readonly PREFIX_OPERATOR_VALUES = new Set<string>([

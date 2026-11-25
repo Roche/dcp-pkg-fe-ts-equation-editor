@@ -1,7 +1,7 @@
-import { FormulaToken, Operator, TranslationFunction } from "../types/EquationEditor";
-import { TokenType } from "../enums/TokenType";
-import { MathOperator } from "../enums/MathSymbols";
-import { TokenValidationUtilities } from "./TokenValidationUtilities";
+import { FormulaToken, Operator, TranslationFunction } from "../types/EquationEditor.js";
+import { TokenType } from "../enums/TokenType.js";
+import { MathOperator } from "../enums/MathSymbols.js";
+import { TokenValidationUtilities } from "./TokenValidationUtilities.js";
 
 export class BasicSyntaxValidator extends TokenValidationUtilities {
     constructor(

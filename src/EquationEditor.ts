@@ -1,13 +1,13 @@
-import { BehaviorSubject, Observable, from, of, switchMap } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Variable, FormulaDetails, FormulaToken, AllOptions, EquationEditorConfig, EquationEditorUpdateOptions, Operator, OperatorVisualizationGroups } from './types/EquationEditor';
-import { joinTokensNormalized } from './utilities/joinTokensNormalized';
-import { MathOperator, Parenthesis } from './enums/MathSymbols';
-import { getBuiltInOperatorsForMode, isMathOperatorValue } from './enums/OperatorDefinitions';
-import { FormulaValidationService } from './services/FormulaValidationService';
-import { OptionFilterService } from './services/OptionFilterService';
-import { parseFormulaString } from './utilities/parseFormulaString';
-import { TokenType } from './enums/TokenType';
+import { BehaviorSubject, Observable, defer, from, of, switchMap } from 'rxjs';
+import { catchError, map, shareReplay } from 'rxjs/operators';
+import { Variable, FormulaDetails, FormulaToken, AllOptions, EquationEditorConfig, EquationEditorUpdateOptions, Operator, OperatorVisualizationGroups } from './types/EquationEditor.js';
+import { joinTokensNormalized, VariableTokenFormatter } from './utilities/joinTokensNormalized.js';
+import { MathOperator, Parenthesis } from './enums/MathSymbols.js';
+import { getBuiltInOperatorsForMode, isMathOperatorValue } from './enums/OperatorDefinitions.js';
+import { FormulaValidationService } from './services/FormulaValidationService.js';
+import { OptionFilterService } from './services/OptionFilterService.js';
+import { parseFormulaString } from './utilities/parseFormulaString.js';
+import { TokenType } from './enums/TokenType.js';
 
 const BUILT_IN_OPERATOR_TRANSLATION_KEYS: Record<string, string> = {
     '=': 'equals',
@@ -37,10 +37,6 @@ const BUILT_IN_OPERATOR_TRANSLATION_KEYS: Record<string, string> = {
 
 const NON_TRANSLATABLE_SYMBOLIC_OPERATORS = new Set(['=', '!=', '>', '<', '>=', '<=']);
 const LIST_RANGE_OPERATORS = new Set(['in', 'notIn', 'between', 'notBetween']);
-
-function escapeRegExp(value: string): string {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 export class EquationEditor {
     private config: EquationEditorConfig;
@@ -93,33 +89,12 @@ export class EquationEditor {
         ))
     );
 
-    // Derived observable: validity
-    public valid$ = this.tokens$.pipe(
-        switchMap(tokens => {
-            const localErrors = this.validationService.validateTokens(tokens, this.parserErrors);
-            if (this.config.customValidator) {
-                const formula = joinTokensNormalized(
-                    tokens,
-                    this.config.variableFenceOpen,
-                    this.config.variableFenceClose,
-                    this.config.numberFenceOpen ?? null,
-                    this.config.numberFenceClose ?? null
-                );
-                const result = this.config.customValidator(formula, tokens);
-                return from(Promise.resolve(result)).pipe(
-                    map(customErrors => {
-                        if (this.config.ignoreInternalErrors) {
-                            return customErrors || [];
-                        }
-                        return [
-                            ...localErrors,
-                            ...(customErrors || [])
-                        ];
-                    })
-                );
-            }
-            return of(localErrors);
-        })
+    // Derived observable: validity.
+    // Shared, so the custom validator runs once per change regardless of the number of subscribers.
+    // A failing validator (throw / rejected promise) yields an error entry instead of terminating the stream.
+    public valid$: Observable<string[]> = this.tokens$.pipe(
+        switchMap(tokens => this.validate$(tokens)),
+        shareReplay({ bufferSize: 1, refCount: true })
     );
 
     // Derived observable: formula details
@@ -141,6 +116,37 @@ export class EquationEditor {
     public groupedOperatorOptions$: Observable<OperatorVisualizationGroups> = this.formula$.pipe(
         map(() => this.getGroupedOperatorsForCurrentState())
     );
+
+    private validate$(tokens: FormulaToken[]): Observable<string[]> {
+        const localErrors = this.validationService.validateTokens(tokens, this.parserErrors);
+        const customValidator = this.config.customValidator;
+        if (!customValidator) {
+            return of(localErrors);
+        }
+
+        const formula = joinTokensNormalized(
+            tokens,
+            this.config.variableFenceOpen,
+            this.config.variableFenceClose,
+            this.config.numberFenceOpen ?? null,
+            this.config.numberFenceClose ?? null
+        );
+        const internalErrors = this.config.ignoreInternalErrors ? [] : localErrors;
+
+        // defer: a synchronous throw inside the validator is caught by catchError as well
+        return defer(() => from(Promise.resolve(customValidator(formula, tokens)))).pipe(
+            map(customErrors => [...internalErrors, ...(customErrors || [])]),
+            catchError(() => of([...internalErrors, this.getCustomValidationFailedMessage()]))
+        );
+    }
+
+    private getCustomValidationFailedMessage(): string {
+        const key = 'custom-validation-failed';
+        if (this.config.translator && this.config.translationPrefix) {
+            return this.config.translator(`${this.config.translationPrefix}.equation-editor.validations.${key}`, {});
+        }
+        return 'Custom validation failed';
+    }
 
     public setVariables(variables: Variable[]): void {
         this.variables = variables;
@@ -255,34 +261,32 @@ export class EquationEditor {
             this.config.numberFenceClose ?? null
         );
 
-        let unfancedDisplay = display;
-        let raw = display;
-        let fanciedRaw = display;
-
+        // Built from the tokens (not by string replacement on `display`): only real variable tokens are
+        // mapped, each exactly once; string literals and other tokens stay verbatim, and values are
+        // inserted literally (no `$` replacement patterns). Unknown variables keep their fenced label.
+        // With duplicate labels the first variable wins.
+        const variablesByLabel = new Map<string, Variable>();
         this.variables.forEach(variable => {
-            const fencedLabel = `${this.config.variableFenceOpen}${variable.label}${this.config.variableFenceClose}`;
-            const unfencedLabel = variable.label;
-            const unfencedValue = variable.value;
-            const fencedValue = `${this.config.variableFenceOpen}${variable.value}${this.config.variableFenceClose}`;
-
-            // unfancedDisplay: replace {label} with label
-            unfancedDisplay = unfancedDisplay.replace(
-                new RegExp(escapeRegExp(fencedLabel), 'g'),
-                unfencedLabel
-            );
-
-            // raw: replace {label} with value
-            raw = raw.replace(
-                new RegExp(escapeRegExp(fencedLabel), 'g'),
-                unfencedValue
-            );
-
-            // fanciedRaw: replace {label} with {value}
-            fanciedRaw = fanciedRaw.replace(
-                new RegExp(escapeRegExp(fencedLabel), 'g'),
-                fencedValue
-            );
+            if (!variablesByLabel.has(variable.label)) variablesByLabel.set(variable.label, variable);
         });
+
+        const join = (formatVariable: VariableTokenFormatter) => joinTokensNormalized(
+            tokens,
+            this.config.variableFenceOpen,
+            this.config.variableFenceClose,
+            this.config.numberFenceOpen ?? null,
+            this.config.numberFenceClose ?? null,
+            formatVariable
+        );
+        const withVariable = (render: (variable: Variable, open: string, close: string) => string): VariableTokenFormatter =>
+            (token, open, close) => {
+                const variable = variablesByLabel.get(token.value);
+                return variable ? render(variable, open, close) : open + token.value + close;
+            };
+
+        const unfancedDisplay = join(withVariable(variable => variable.label));
+        const raw = join(withVariable(variable => variable.value));
+        const fanciedRaw = join(withVariable((variable, open, close) => open + variable.value + close));
 
         return { raw, fanciedRaw, display, unfancedDisplay, tokens };
     }

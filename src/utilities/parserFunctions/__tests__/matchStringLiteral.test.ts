@@ -1,5 +1,5 @@
-import { matchStringLiteral } from '../matchStringLiteral';
-import { TokenType } from '../../../enums/TokenType';
+import { matchStringLiteral } from '../matchStringLiteral.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 // Simple translation function for testing
 const testTranslator = (key: string, payload?: Record<string, any>) => key;

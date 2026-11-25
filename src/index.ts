@@ -1,10 +1,10 @@
-export * from './EquationEditor';
-export * from './enums/MathSymbols';
-export * from './enums/OperatorDefinitions';
-export * from './enums/TokenType';
-export * from './types/EquationEditor';
+export * from './EquationEditor.js';
+export * from './enums/MathSymbols.js';
+export * from './enums/OperatorDefinitions.js';
+export * from './enums/TokenType.js';
+export * from './types/EquationEditor.js';
 
-export type { FormulaDetails } from './types/EquationEditor';
+export type { FormulaDetails } from './types/EquationEditor.js';
 
-export * from './utilities/parseFormulaString';
-export * from './utilities/joinTokensNormalized';
+export * from './utilities/parseFormulaString.js';
+export * from './utilities/joinTokensNormalized.js';

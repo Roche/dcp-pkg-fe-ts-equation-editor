@@ -1,6 +1,6 @@
-import { matchArgumentSeparator } from '../matchArgumentSeparator';
-import { TokenType } from '../../../enums/TokenType';
-import { ArgumentSeparator } from '../../../enums/MathSymbols';
+import { matchArgumentSeparator } from '../matchArgumentSeparator.js';
+import { TokenType } from '../../../enums/TokenType.js';
+import { ArgumentSeparator } from '../../../enums/MathSymbols.js';
 
 describe('matchArgumentSeparator', () => {
     it('matches comma as argument separator', () => {

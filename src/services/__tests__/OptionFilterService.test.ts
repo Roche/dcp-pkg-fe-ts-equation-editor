@@ -1,6 +1,6 @@
-import { TokenType } from "../../enums/TokenType";
-import { MathOperator, Parenthesis } from "../../enums/MathSymbols";
-import { OptionFilterService } from "../OptionFilterService";
+import { TokenType } from "../../enums/TokenType.js";
+import { MathOperator, Parenthesis } from "../../enums/MathSymbols.js";
+import { OptionFilterService } from "../OptionFilterService.js";
 
 describe('OptionFilterService', () => {
     const allOptions = {

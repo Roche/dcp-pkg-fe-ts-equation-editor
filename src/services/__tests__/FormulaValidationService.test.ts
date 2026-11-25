@@ -1,7 +1,7 @@
-import { TokenType } from "../../enums/TokenType";
-import { MathOperator } from "../../enums/MathSymbols";
-import { FormulaValidationService } from "../FormulaValidationService";
-import { Operator } from "../../types/EquationEditor";
+import { TokenType } from "../../enums/TokenType.js";
+import { MathOperator } from "../../enums/MathSymbols.js";
+import { FormulaValidationService } from "../FormulaValidationService.js";
+import { Operator } from "../../types/EquationEditor.js";
 
 // Simple translation function for testing
 const testTranslator = (key: string, payload?: Record<string, any>) => key;

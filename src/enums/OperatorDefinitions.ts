@@ -1,5 +1,5 @@
-import { MathOperator } from './MathSymbols';
-import { EditorMode, Operator } from '../types/EquationEditor';
+import { MathOperator } from './MathSymbols.js';
+import { EditorMode, Operator } from '../types/EquationEditor.js';
 
 export const BUILT_IN_OPERATORS: Operator[] = [
     {

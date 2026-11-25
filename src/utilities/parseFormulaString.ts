@@ -1,15 +1,15 @@
-import { MathOperator, Parenthesis } from '../enums/MathSymbols';
-import { matchStringLiteral } from './parserFunctions/matchStringLiteral';
-import { matchFencedVariable } from './parserFunctions/matchFencedVariable';
-import { matchFunction } from './parserFunctions/matchFunction';
-import { matchVariable } from './parserFunctions/matchVariable';
-import { matchNumber } from './parserFunctions/matchNumber';
-import { matchArgumentSeparator } from './parserFunctions/matchArgumentSeparator';
-import { matchOperator } from './parserFunctions/matchOperator';
-import { matchParenthesis } from './parserFunctions/matchParenthesis';
-import { matchBracket } from './parserFunctions/matchBracket';
-import { TokenType } from '../enums/TokenType';
-import { FormulaToken, Operator, TranslationFunction } from '../types/EquationEditor';
+import { MathOperator, Parenthesis } from '../enums/MathSymbols.js';
+import { matchStringLiteral } from './parserFunctions/matchStringLiteral.js';
+import { matchFencedVariable } from './parserFunctions/matchFencedVariable.js';
+import { matchFunction } from './parserFunctions/matchFunction.js';
+import { matchVariable } from './parserFunctions/matchVariable.js';
+import { matchNumber } from './parserFunctions/matchNumber.js';
+import { matchArgumentSeparator } from './parserFunctions/matchArgumentSeparator.js';
+import { matchOperator } from './parserFunctions/matchOperator.js';
+import { matchParenthesis } from './parserFunctions/matchParenthesis.js';
+import { matchBracket } from './parserFunctions/matchBracket.js';
+import { TokenType } from '../enums/TokenType.js';
+import { FormulaToken, Operator, TranslationFunction } from '../types/EquationEditor.js';
 
 export interface ParseFormulaResult {
     success: boolean;

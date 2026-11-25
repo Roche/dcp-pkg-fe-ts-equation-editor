@@ -1,5 +1,5 @@
-import { matchVariable } from '../matchVariable';
-import { TokenType } from '../../../enums/TokenType';
+import { matchVariable } from '../matchVariable.js';
+import { TokenType } from '../../../enums/TokenType.js';
 
 describe('matchVariable', () => {
     it('matches variable from sortedVars', () => {

@@ -1,5 +1,5 @@
-import { FormulaToken, TranslationFunction } from '../../types/EquationEditor';
-import { TokenType } from '../../enums/TokenType';
+import { FormulaToken, TranslationFunction } from '../../types/EquationEditor.js';
+import { TokenType } from '../../enums/TokenType.js';
 
 export function matchFencedVariable(
     formula: string,

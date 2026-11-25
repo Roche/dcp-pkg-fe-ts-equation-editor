@@ -1,6 +1,6 @@
-import { joinTokensNormalized } from '../joinTokensNormalized';
-import { FormulaToken } from '../../types/EquationEditor';
-import { TokenType } from '../../enums/TokenType';
+import { joinTokensNormalized } from '../joinTokensNormalized.js';
+import { FormulaToken } from '../../types/EquationEditor.js';
+import { TokenType } from '../../enums/TokenType.js';
 
 describe('joinTokensNormalized', () => {
     it('should join tokens with fenced variables', () => {

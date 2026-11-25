@@ -1,6 +1,6 @@
-import { EditorMode, FormulaToken, Operator, TranslationFunction } from "../types/EquationEditor";
-import { BasicSyntaxValidator } from "./BasicSyntaxValidator";
-import { OperatorValidator } from "./OperatorValidator";
+import { EditorMode, FormulaToken, Operator, TranslationFunction } from "../types/EquationEditor.js";
+import { BasicSyntaxValidator } from "./BasicSyntaxValidator.js";
+import { OperatorValidator } from "./OperatorValidator.js";
 
 export class FormulaValidationService {
     private basicSyntaxValidator: BasicSyntaxValidator;
